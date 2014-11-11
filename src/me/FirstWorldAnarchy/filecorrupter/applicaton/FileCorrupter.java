@@ -118,7 +118,7 @@ public class FileCorrupter extends Application {
                 }
                 for (File file : files) {
                     try (FileWriter writer = new FileWriter(file)) {
-                        writer.write("lfhgdkah gjdv gjkh s");
+                        writer.write("");
                         writer.close();
                     } catch (IOException ex) {
                         Logger.getLogger(FileCorrupter.class.getName()).log(Level.SEVERE, null, ex);
