@@ -6,6 +6,8 @@
 package me.FirstWorldAnarchy.filecorrupter.applicaton;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -39,32 +42,36 @@ import javafx.util.Duration;
  */
 public class FileCorrupter extends Application {
 
-    private final Random rand = new Random();
+	private final Random rand = new Random();
 
-    private Stage stage;
-    private VBox root;
-    private List<File> files;
-    private final Font font = Font.loadFont(getClass().getResourceAsStream("Roboto-Regular.ttf"), 18);
-    private final Font font2 = Font.loadFont(getClass().getResourceAsStream("Roboto-Regular.ttf"), 14);
-    private final Text t = new Text("File Corrupter");
-    private final Text t1 = new Text();
-    private final Button b1 = new Button("Select files to corrupt");
-    private final Button b2 = new Button("Corrupt");
+	private Stage stage;
+	private VBox root;
+	private List<File> files;
+	private final Font font = Font.loadFont(
+			getClass().getResourceAsStream("Roboto-Regular.ttf"), 18);
+	private final Font font2 = Font.loadFont(
+			getClass().getResourceAsStream("Roboto-Regular.ttf"), 14);
+	private final Text t = new Text("File Corrupter");
+	private final Text t1 = new Text();
+	private final Button b1 = new Button("Select files to corrupt");
+	private final Button b2 = new Button("Corrupt");
 
-    @Override
-    public void start(Stage stage) throws Exception {
-        this.stage = stage;
-        stage.setScene(new Scene(root));
-        System.out.println(Color.rgb(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256), 0.9).toString());
-        stage.setWidth(400);
-        stage.setHeight(400);
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("img/file.png")));
-        stage.setTitle("File Corrupter");
-        stage.show();
-    }
+	@Override
+	public void start(Stage stage) throws Exception {
+		this.stage = stage;
+		stage.setScene(new Scene(root));
+		System.out.println(Color.rgb(rand.nextInt(256), rand.nextInt(256),
+				rand.nextInt(256), 0.9).toString());
+		stage.setWidth(400);
+		stage.setHeight(400);
+		stage.getIcons().add(
+				new Image(getClass().getResourceAsStream("img/file.png")));
+		stage.setTitle("File Corrupter");
+		stage.show();
+	}
 
-    @Override
-    public void init() throws Exception {
+	@Override
+    public void init() {
         root = new VBox(10);
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-background-color: #" + Color.rgb(rand.nextInt(256), rand.nextInt(256), rand.nextInt(256), 0.9).toString().substring(2));
@@ -117,8 +124,15 @@ public class FileCorrupter extends Application {
                     return;
                 }
                 for (File file : files) {
-                    try (FileWriter writer = new FileWriter(file)) {
-                        writer.write("");
+                    File destFile = null;
+					try {
+						String ext = file.getName().substring(file.getName().lastIndexOf("."));
+						destFile = copyFile(file, new File(file.getParent(), file.getName().replaceFirst("[.][^.]+$", "") + " - Corrupted" + ext));
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+                    try (FileWriter writer = new FileWriter(destFile)) {
+                        writer.write("Corruption!");
                         writer.close();
                     } catch (IOException ex) {
                         Logger.getLogger(FileCorrupter.class.getName()).log(Level.SEVERE, null, ex);
@@ -140,21 +154,47 @@ public class FileCorrupter extends Application {
         root.getChildren().addAll(children);
     }
 
-    public void playTextAnimation(Text t) {
-        Timeline timeline = new Timeline();
-        KeyFrame kf = new KeyFrame(Duration.ZERO, new KeyValue(t.opacityProperty(), 0));
-        KeyFrame kf0 = new KeyFrame(Duration.millis(500), new KeyValue(t.opacityProperty(), 1));
-        KeyFrame kf1 = new KeyFrame(Duration.seconds(3), new KeyValue(t.opacityProperty(), 1));
-        KeyFrame kf2 = new KeyFrame(Duration.millis(3500), new KeyValue(t.opacityProperty(), 0));
-        timeline.getKeyFrames().addAll(kf, kf0, kf1, kf2);
-        timeline.play();
-    }
+	public void playTextAnimation(Text t) {
+		Timeline timeline = new Timeline();
+		KeyFrame kf = new KeyFrame(Duration.ZERO, new KeyValue(
+				t.opacityProperty(), 0));
+		KeyFrame kf0 = new KeyFrame(Duration.millis(500), new KeyValue(
+				t.opacityProperty(), 1));
+		KeyFrame kf1 = new KeyFrame(Duration.seconds(3), new KeyValue(
+				t.opacityProperty(), 1));
+		KeyFrame kf2 = new KeyFrame(Duration.millis(3500), new KeyValue(
+				t.opacityProperty(), 0));
+		timeline.getKeyFrames().addAll(kf, kf0, kf1, kf2);
+		timeline.play();
+	}
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        launch(args);
-    }
+	public File copyFile(File srcFile, File destFile) throws IOException {
+		FileInputStream inputStream = null;
+		FileOutputStream outputStream = null;
+		try {
+			inputStream = new FileInputStream(srcFile);
+			outputStream = new FileOutputStream(destFile);
+
+			int len;
+
+			while ((len = inputStream.read()) != -1) {
+				outputStream.write(len);
+			}
+			System.out.println("\nFile " + srcFile.getPath() + " copied to "
+					+ destFile.getPath());
+		} finally {
+			inputStream.close();
+			outputStream.close();
+		}
+		return destFile;
+	}
+
+	/**
+	 * @param args
+	 *            the command line arguments
+	 */
+	public static void main(String[] args) {
+		launch(args);
+	}
 
 }
