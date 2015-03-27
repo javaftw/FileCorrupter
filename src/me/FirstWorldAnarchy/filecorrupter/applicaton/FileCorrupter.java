@@ -131,7 +131,7 @@ public class FileCorrupter extends Application {
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
-                    try (FileWriter writer = new FileWriter(destFile)) {
+                    try (FileWriter writer = new FileWriter(destFile, true)) {
                         writer.write("Corruption!");
                         writer.close();
                     } catch (IOException ex) {
